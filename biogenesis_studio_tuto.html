@@ -1,0 +1,400 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-mono, monospace); }
+.tuto-root { padding: 1.5rem 0; color: var(--color-text-primary); }
+.session-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.nav-btn {
+  padding: 6px 14px; border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md); background: transparent;
+  color: var(--color-text-secondary); font-size: 13px; cursor: pointer;
+  font-family: var(--font-mono, monospace); transition: all 0.15s;
+}
+.nav-btn.active, .nav-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); border-color: var(--color-border-primary); }
+.nav-btn.active { font-weight: 500; }
+.session-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.session-header { padding: 1rem 1.25rem; background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); }
+.session-label { font-size: 11px; color: var(--color-text-tertiary); letter-spacing: 0.05em; margin-bottom: 4px; }
+.session-title { font-size: 17px; font-weight: 500; color: var(--color-text-primary); }
+.session-desc { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; line-height: 1.5; }
+.session-body { padding: 1.25rem; }
+.step { margin-bottom: 1.25rem; }
+.step-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.step-num { width: 22px; height: 22px; border-radius: 50%; border: 0.5px solid var(--color-border-secondary); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--color-text-secondary); flex-shrink: 0; margin-top: 1px; }
+.step-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); line-height: 1.4; }
+.step-body { margin-left: 32px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
+.code-block { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; font-family: var(--font-mono, monospace); font-size: 12px; line-height: 1.7; margin: 8px 0; overflow-x: auto; white-space: pre; color: var(--color-text-primary); }
+.code-comment { color: var(--color-text-tertiary); }
+.code-flag { color: #5DCAA5; }
+.code-string { color: #FAC775; }
+.code-cmd { color: #85B7EB; }
+.note { background: var(--color-background-secondary); border-left: 2px solid #5DCAA5; border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; padding: 8px 12px; font-size: 12px; color: var(--color-text-secondary); margin: 8px 0; line-height: 1.5; }
+.warn { background: var(--color-background-secondary); border-left: 2px solid #EF9F27; border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; padding: 8px 12px; font-size: 12px; color: var(--color-text-secondary); margin: 8px 0; line-height: 1.5; }
+.tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+.tag { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
+.tag.py { border-color: #378ADD; color: #378ADD; }
+.tag.cs { border-color: #1D9E75; color: #1D9E75; }
+.tag.js { border-color: #BA7517; color: #BA7517; }
+.tag.rs { border-color: #D4537E; color: #D4537E; }
+.tag.go { border-color: #7F77DD; color: #7F77DD; }
+.ask-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 6px 12px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: transparent; color: var(--color-text-secondary); font-size: 12px; cursor: pointer; font-family: var(--font-mono, monospace); }
+.ask-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+.pipeline { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 10px 0; font-size: 12px; }
+.pipe-box { padding: 4px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); color: var(--color-text-secondary); background: var(--color-background-secondary); }
+.pipe-arr { color: var(--color-text-tertiary); }
+.divider { height: 0.5px; background: var(--color-border-tertiary); margin: 1rem 0; }
+</style>
+<h2 class="sr-only">Tutoriel interactif Biogenesis Studio Ultimate — 6 sessions d'utilisation</h2>
+
+<div class="tuto-root">
+  <div class="session-nav" id="nav"></div>
+  <div class="session-card" id="card"></div>
+</div>
+
+<script>
+const sessions = [
+  {
+    id: "s1",
+    label: "Session 01",
+    title: "Installation & premier démarrage",
+    desc: "Mettre en place l'environnement, vérifier les dépendances et lancer le Studio en mode GUI.",
+    steps: [
+      {
+        title: "Cloner le dépôt et préparer l'environnement",
+        body: `Commence par récupérer les fichiers et installer les dépendances Python.`,
+        code: `<span class="code-comment"># Cloner le repo</span>
+git clone https://github.com/doktornand/Biogenesis-Studio-Ultimate
+cd Biogenesis-Studio-Ultimate
+
+<span class="code-comment"># Dépendances obligatoires</span>
+pip install numpy
+
+<span class="code-comment"># Dépendances recommandées (visualisations)</span>
+pip install matplotlib networkx scipy`,
+        note: "numpy est le seul module bloquant. Sans matplotlib/networkx/scipy, les onglets graphiques se désactivent proprement — le reste fonctionne.",
+      },
+      {
+        title: "Placer le proteome_config (json génome)",
+        body: `Le moteur cherche <span style="font-family:var(--font-mono);font-size:12px">proteome_config_949.json</span> dans le sous-dossier <span style="font-family:var(--font-mono);font-size:12px">upload/</span>. Place ton fichier JSON là ou modifie le chemin dans <span style="font-family:var(--font-mono);font-size:12px">BioCompilerEngine.__init__</span>.`,
+        code: `<span class="code-comment"># Structure attendue</span>
+Biogenesis-Studio-Ultimate/
+├── bio_compiler_studio.py        <span class="code-comment"># GUI + CLI</span>
+├── Bio-Compiler_evolved.py       <span class="code-comment"># moteur évolution</span>
+├── prot_generator_multilang.py   <span class="code-comment"># générateur multi-lang</span>
+└── upload/
+    └── proteome_config_949.json  <span class="code-comment"># ← ton génome ici</span>`,
+      },
+      {
+        title: "Lancer le Studio en mode GUI",
+        body: "L'interface Tkinter s'ouvre avec 8 onglets.",
+        code: `python bio_compiler_studio.py
+<span class="code-comment"># ou explicitement :</span>
+python bio_compiler_studio.py <span class="code-flag">--gui</span>`,
+        note: "Si tkinter est absent (Linux minimal), installe python3-tk via ton gestionnaire de paquets.",
+      }
+    ]
+  },
+  {
+    id: "s2",
+    label: "Session 02",
+    title: "Générer des protéines en CLI",
+    desc: "Utiliser prot_generator_multilang.py directement pour produire du code dans 5 langages.",
+    steps: [
+      {
+        title: "Syntaxe de base",
+        body: `Le générateur prend un JSON de config et produit les fichiers dans <span style="font-family:var(--font-mono);font-size:12px">./slot/</span> (ou le dossier spécifié).`,
+        code: `python prot_generator_multilang.py <span class="code-string">proteome_config_949.json</span>
+<span class="code-comment"># Sortie par défaut : C# dans ./slot/</span>`,
+        tags: ["cs"],
+      },
+      {
+        title: "Choisir le langage cible",
+        body: "L'option <code>-l</code> / <code>--lang</code> contrôle le langage de sortie. 5 cibles disponibles :",
+        code: `<span class="code-comment"># Python</span>
+python prot_generator_multilang.py config.json <span class="code-flag">-l python</span>
+
+<span class="code-comment"># JavaScript</span>
+python prot_generator_multilang.py config.json <span class="code-flag">-l javascript</span>
+
+<span class="code-comment"># Rust</span>
+python prot_generator_multilang.py config.json <span class="code-flag">-l rust</span> <span class="code-flag">-o ./out_rust</span>
+
+<span class="code-comment"># Go</span>
+python prot_generator_multilang.py config.json <span class="code-flag">-l go</span> <span class="code-flag">-g 42</span>
+<span class="code-comment"># -g : numéro de génération (injecté dans le manifeste)</span>`,
+        tags: ["py","js","rs","go"],
+      },
+      {
+        title: "Lire le manifeste de sortie",
+        body: `Chaque run produit <span style="font-family:var(--font-mono);font-size:12px">manifest_{lang}.json</span> dans le dossier de sortie — il liste les protéines générées, checksums et métadonnées.`,
+        code: `<span class="code-comment"># Exemple de manifeste</span>
+{
+  <span class="code-string">"generation"</span>: 0,
+  <span class="code-string">"language"</span>: <span class="code-string">"rust"</span>,
+  <span class="code-string">"proteins"</span>: [
+    {
+      <span class="code-string">"id"</span>: <span class="code-string">"PROT_REPLICASE"</span>,
+      <span class="code-string">"filename"</span>: <span class="code-string">"PROT_REPLICASE.rs"</span>,
+      <span class="code-string">"checksum"</span>: <span class="code-string">"a3f1c9e2b4d8"</span>,
+      <span class="code-string">"lines"</span>: 87,
+      <span class="code-string">"extends"</span>: <span class="code-string">"PROT_BASE"</span>
+    }
+  ]
+}`,
+        note: "Si un fichier n'a pas changé depuis le run précédent, le moteur le détecte via checksum et skip la réecriture.",
+      }
+    ]
+  },
+  {
+    id: "s3",
+    label: "Session 03",
+    title: "Évolution génétique en CLI",
+    desc: "Faire évoluer une population de séquences ADN vers un fitness cible, avec export des résultats.",
+    steps: [
+      {
+        title: "Lancer une évolution simple",
+        body: `Le mode <span style="font-family:var(--font-mono);font-size:12px">--evolve</span> démarre l'algorithme génétique sur la population.`,
+        code: `python bio_compiler_studio.py <span class="code-flag">--cli</span> <span class="code-flag">--evolve</span> \
+  <span class="code-flag">--gens</span> 100 \
+  <span class="code-flag">--pop</span> 50 \
+  <span class="code-flag">--lang</span> python`,
+      },
+      {
+        title: "Options clés de l'évolution",
+        body: "Tous les hyperparamètres sont accessibles en CLI :",
+        code: `<span class="code-flag">--gens</span>    N          <span class="code-comment"># nombre de générations (défaut: 50)</span>
+<span class="code-flag">--pop</span>     N          <span class="code-comment"># taille de population (défaut: 30)</span>
+<span class="code-flag">--lang</span>    LANG       <span class="code-comment"># langage cible</span>
+<span class="code-flag">--coevolve</span>           <span class="code-comment"># active population hôte + parasite</span>
+<span class="code-flag">--export-newick</span>     <span class="code-comment"># export arbre phylogénétique</span>
+<span class="code-flag">--export-history</span>    <span class="code-comment"># export historique de fitness</span>`,
+      },
+      {
+        title: "Transcription directe d'une séquence ADN",
+        body: `Donner une séquence ADN brute en entrée, obtenir du code source en sortie. Utile pour tester une séquence trouvée dans l'éditeur.`,
+        code: `python bio_compiler_studio.py <span class="code-flag">--cli</span> \
+  <span class="code-flag">--dna</span> <span class="code-string">ATGTTTCTGCTCAAGGAT...</span> \
+  <span class="code-flag">--lang</span> csharp \
+  <span class="code-flag">--output</span> generated.cs`,
+        note: "La séquence doit être un multiple de 3 (codons complets). ATG = start, TAA/TAG/TGA = stop.",
+      },
+      {
+        title: "Pipeline complet (évolution → génomes → code)",
+        body: "Enchaîner évolution puis génération de protéines :",
+        pipeline: ["--evolve --gens 100", "→", "--generate-proteins", "→", "slot/ (code source)"],
+        code: `<span class="code-comment"># Étape 1 : évoluer</span>
+python bio_compiler_studio.py <span class="code-flag">--cli</span> <span class="code-flag">--evolve</span> <span class="code-flag">--gens 100</span> <span class="code-flag">--pop 50</span> <span class="code-flag">--coevolve</span> <span class="code-flag">--export-history</span>
+
+<span class="code-comment"># Étape 2 : générer les protéines .prot depuis le meilleur individu</span>
+python bio_compiler_studio.py <span class="code-flag">--cli</span> <span class="code-flag">--generate-proteins</span> <span class="code-flag">--slot ./slot</span>`,
+      }
+    ]
+  },
+  {
+    id: "s4",
+    label: "Session 04",
+    title: "L'interface GUI — les 8 onglets",
+    desc: "Tour des panneaux de visualisation temps réel et de l'éditeur ADN.",
+    steps: [
+      {
+        title: "Onglet Évolution — contrôle en direct",
+        body: "Start / Pause / Stop pilotent le thread d'évolution. Le graphe se met à jour en temps réel : courbe fitness (vert), fitness moyen (ambre), diversité génétique (cyan pointillé).",
+        code: `<span class="code-comment"># Boutons GUI équivalents aux flags CLI :</span>
+▶ Start   → <span class="code-flag">--evolve</span>
+⏸ Pause   → interruption non destructive (reprend là où ça s'est arrêté)
+⏹ Stop    → <span class="code-flag">_stop_event.set()</span>`,
+        note: "Le seuil de convergence anticipée est fitness ≥ 0.95 — l'évolution s'arrête automatiquement.",
+      },
+      {
+        title: "Onglet Protéines — graphe de dépendances",
+        body: `Graphe NetworkX des 18 protéines avec : liens <span style="color:#06b6d4">cyan</span> = héritage (extends), liens <span style="color:#f59e0b">ambre</span> = appartenance à un opéron. Couleur de nœud = phase cellulaire (G1, S, M, apoptose...).`,
+      },
+      {
+        title: "Onglet Éditeur ADN",
+        body: "Saisir ou générer une séquence, voir la coloration syntaxique des codons (ATG vert, stops rouge, épigénétiques magenta), puis cliquer Transcrire pour obtenir le code source dans la langue courante.",
+        code: `<span class="code-comment"># Codons colorés :</span>
+ATG       <span class="code-comment"># vert  — codon START</span>
+TAA/TAG/TGA <span class="code-comment"># rouge — codons STOP</span>
+CGG/CGC   <span class="code-comment"># magenta — transposons</span>
+TTA/TTG   <span class="code-comment"># violet — marqueurs épigénétiques</span>`,
+        note: "Le bouton Aléatoire génère une séquence de 36–60 bp alignée sur les codons (multiple de 3).",
+      },
+      {
+        title: "Sélecteur de langage dans le GUI",
+        body: `Un sélecteur (Combobox) en haut de l'interface change le langage cible à la volée. Il appelle <span style="font-family:var(--font-mono);font-size:12px">engine.set_target_language(lang)</span> et réinitialise le transcripteur.`,
+        tags: ["py","cs","js","rs","go"],
+      }
+    ]
+  },
+  {
+    id: "s5",
+    label: "Session 05",
+    title: "Comprendre le JSON de config",
+    desc: "Anatomie d'un proteome_config.json — protéines, héritage, templates et directives.",
+    steps: [
+      {
+        title: "Structure globale",
+        body: "Le JSON est le génome complet du programme. Il contient 5 sections clés :",
+        code: `{
+  <span class="code-string">"global"</span>: { <span class="code-comment">/* paramètres partagés */</span> },
+  <span class="code-string">"proteins"</span>: [ <span class="code-comment">/* les unités générables */</span> ],
+  <span class="code-string">"operons"</span>: [ <span class="code-comment">/* groupes de gènes co-régulés */</span> ],
+  <span class="code-string">"plasmids"</span>: [ <span class="code-comment">/* ADN circulaire / linéaire supplémentaire */</span> ],
+  <span class="code-string">"transposons"</span>: { <span class="code-comment">/* éléments mobiles (mutation spontanée) */</span> }
+}`,
+      },
+      {
+        title: "Définir une protéine avec héritage",
+        body: `<span style="font-family:var(--font-mono);font-size:12px">extends</span> copie le template parent, <span style="font-family:var(--font-mono);font-size:12px">override</span> surcharge des clés précises (dot-notation).`,
+        code: `{
+  <span class="code-string">"id"</span>: <span class="code-string">"PROT_REPLICASE_FAST"</span>,
+  <span class="code-string">"extends"</span>: <span class="code-string">"PROT_REPLICASE"</span>,
+  <span class="code-string">"filename"</span>: <span class="code-string">"ReplicaseFast.py"</span>,
+  <span class="code-string">"override"</span>: {
+    <span class="code-string">"variables.speed"</span>: 2.5,
+    <span class="code-string">"meta.cell_phase"</span>: <span class="code-string">"S_late"</span>
+  },
+  <span class="code-string">"template"</span>: [
+    <span class="code-string">"{{comment}} Fast replicase override"</span>,
+    <span class="code-string">"{{state_var}} = {{variables.speed}}"</span>
+  ]
+}`,
+      },
+      {
+        title: "Directives de template disponibles",
+        body: "Les doubles accolades sont le langage de template. Voici les directives principales :",
+        code: `<span class="code-string">{{comment}}</span>          <span class="code-comment"># commentaire adapté au langage (#, //, --)</span>
+<span class="code-string">{{state_var}}</span>         <span class="code-comment"># variable d'état (self._cellularState en Python)</span>
+<span class="code-string">{{entropy}}</span>           <span class="code-comment"># variable entropie</span>
+<span class="code-string">{{expr:random()*2}}</span>  <span class="code-comment"># expression évaluée (SafeEvaluator)</span>
+<span class="code-string">{{meta:cell_phase}}</span>  <span class="code-comment"># métadonnée de la protéine</span>
+<span class="code-string">{{if:condition}}</span>     <span class="code-comment"># bloc conditionnel</span>
+<span class="code-string">{{endif}}</span>
+<span class="code-string">{{repeat:5}}</span>         <span class="code-comment"># répétition N fois</span>
+<span class="code-string">{{endrepeat}}</span>
+<span class="code-string">{{quine:}}</span>           <span class="code-comment"># auto-impression du template (Hofstadter!)</span>
+<span class="code-string">{{plasmid:PLM_LOG}}</span>  <span class="code-comment"># insertion d'un plasmide</span>
+<span class="code-string">{{self_ref:PROT_X}}</span> <span class="code-comment"># référence récursive (profondeur max = 6)</span>`,
+        warn: "{{self_ref}} peut provoquer une récursion infinie si tu crées un cycle dans les dépendances. Le moteur coupe à max_recursion_depth (défaut 6).",
+      }
+    ]
+  },
+  {
+    id: "s6",
+    label: "Session 06",
+    title: "Cas d'usage avancé — coévolution & phylogénie",
+    desc: "Activer la coévolution hôte/parasite, exporter l'arbre Newick et brancher le pipeline sur un langage cible.",
+    steps: [
+      {
+        title: "Coévolution hôte / parasite",
+        body: `Le flag <span style="font-family:var(--font-mono);font-size:12px">--coevolve</span> active une seconde population (parasite) qui pression-sélectionne l'hôte. La fitness est calculée en tenant compte du parasite tiré aléatoirement.`,
+        code: `python bio_compiler_studio.py <span class="code-flag">--cli</span> <span class="code-flag">--evolve</span> \
+  <span class="code-flag">--gens</span> 200 <span class="code-flag">--pop</span> 80 \
+  <span class="code-flag">--coevolve</span> \
+  <span class="code-flag">--export-newick</span> \
+  <span class="code-flag">--export-history</span> \
+  <span class="code-flag">--lang</span> rust`,
+        note: "Avec coévolution, la diversité génétique reste plus haute car la sélection est moins uniforme.",
+      },
+      {
+        title: "Niche partitioning — préserver la diversité",
+        body: `La méthode <span style="font-family:var(--font-mono);font-size:12px">_niche_partition</span> distribue la population en N niches écologiques. Cela évite la convergence prématurée et maintient plusieurs solutions en compétition.`,
+        code: `<span class="code-comment"># Dans le GUI : champ "Niches" dans le panneau Évolution</span>
+<span class="code-comment"># En CLI via config ou patch direct :</span>
+engine.niche_count = 5  <span class="code-comment"># 3 par défaut</span>`,
+      },
+      {
+        title: "Export phylogénie Newick + intégration externe",
+        body: `L'arbre Newick exporté est compatible avec tout viewer standard (FigTree, iTOL, etc.). L'onglet Phylogénie du GUI affiche le dendrogramme hiérarchique scipy avec coloration par fitness.`,
+        code: `<span class="code-comment"># Le Newick est généré depuis self.phylogeny (liste de noeuds)</span>
+<span class="code-comment"># Format : ((gen0_r0:0.12, gen0_r1:0.34):0.5, gen1_r0:0.9)</span>
+
+<span class="code-comment"># Pour visualiser en dehors du Studio :</span>
+from Bio import Phylo
+from io import StringIO
+tree = Phylo.read(StringIO(newick_str), <span class="code-string">"newick"</span>)
+Phylo.draw_ascii(tree)`,
+      },
+      {
+        title: "Générer du code Rust ou Go prêt à compiler",
+        body: `Le profil Rust injecte les imports rand, et le profil Go utilise les packages fmt/math/rand. Les fichiers produits sont syntaxiquement corrects (à l'exception du rand::Rng qui nécessite un Cargo.toml).`,
+        code: `<span class="code-comment"># Pour Rust : ajouter à Cargo.toml</span>
+[dependencies]
+rand = <span class="code-string">"0.8"</span>
+
+<span class="code-comment"># Pour Go : les imports sont auto-gérés</span>
+<span class="code-comment"># Compiler directement :</span>
+go build ./slot/BioProgram.go`,
+        tags: ["rs","go"],
+        ask: "Montre-moi un exemple de fichier Rust généré par Bio-Compiler",
+      }
+    ]
+  }
+];
+
+function renderCode(code) {
+  return `<div class="code-block">${code}</div>`;
+}
+
+function renderStep(s, i) {
+  let html = `<div class="step">
+    <div class="step-head">
+      <div class="step-num">${i+1}</div>
+      <div class="step-title">${s.title}</div>
+    </div>
+    <div class="step-body">`;
+  if (s.body) html += `<p style="margin-bottom:6px">${s.body}</p>`;
+  if (s.pipeline) {
+    html += `<div class="pipeline">`;
+    s.pipeline.forEach(p => {
+      if (p === "→") html += `<span class="pipe-arr">→</span>`;
+      else html += `<span class="pipe-box">${p}</span>`;
+    });
+    html += `</div>`;
+  }
+  if (s.tags) {
+    html += `<div class="tag-row">`;
+    s.tags.forEach(t => { html += `<span class="tag ${t}">${t}</span>`; });
+    html += `</div>`;
+  }
+  if (s.code) html += renderCode(s.code);
+  if (s.note) html += `<div class="note">${s.note}</div>`;
+  if (s.warn) html += `<div class="warn"><strong>Attention :</strong> ${s.warn}</div>`;
+  if (s.ask) html += `<button class="ask-btn" onclick="sendPrompt('${s.ask}')"><i class="ti ti-arrow-right" aria-hidden="true"></i> ${s.ask} ↗</button>`;
+  html += `</div></div>`;
+  return html;
+}
+
+function renderSession(sess) {
+  let html = `<div class="session-header">
+    <div class="session-label">${sess.label}</div>
+    <div class="session-title">${sess.title}</div>
+    <div class="session-desc">${sess.desc}</div>
+  </div><div class="session-body">`;
+  sess.steps.forEach((s, i) => { html += renderStep(s, i); });
+  html += `</div>`;
+  return html;
+}
+
+let current = 0;
+const nav = document.getElementById('nav');
+const card = document.getElementById('card');
+
+function activate(i) {
+  current = i;
+  nav.querySelectorAll('.nav-btn').forEach((b, j) => {
+    b.classList.toggle('active', j === i);
+  });
+  card.innerHTML = renderSession(sessions[i]);
+}
+
+sessions.forEach((s, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'nav-btn';
+  btn.textContent = s.label;
+  btn.onclick = () => activate(i);
+  nav.appendChild(btn);
+});
+
+activate(0);
+</script>
