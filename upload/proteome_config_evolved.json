@@ -1,0 +1,232 @@
+{
+  "schema_version": "2.0.0",
+  "project": "StrangeLoopCellularProteome_Evolved",
+  "global": {
+    "language": "csharp",
+    "indent_size": 4,
+    "state_var": "_cellularState",
+    "entropy_var": "_entropy",
+    "comment_prefix": "// ",
+    "max_recursion_depth": 6,
+    "distillation_blend_prob": 0.15,
+    "oscillation_period": 3,
+    "quine_depth": 2,
+    "plasmid_dir": "./plasmids",
+    "operon_prefix": "OP_"
+  },
+  "operons": [
+    {
+      "id": "OP_STRESS",
+      "promoter_condition": "state_var > 8",
+      "description": "Régulateur de stress cellulaire. Active la réponse SOS.",
+      "genes": ["heatshock", "repair"]
+    },
+    {
+      "id": "OP_GROWTH",
+      "promoter_condition": "state_var < 3",
+      "description": "Opéron de croissance. Stimule l'anabolisme si état faible.",
+      "genes": ["phenylalanine", "analyze"]
+    }
+  ],
+  "plasmids": [
+    {
+      "id": "PLM_LOGGER",
+      "description": "Plasmide circulaire: log structuré injectable dans tout génome.",
+      "circular": true,
+      "sequence": [
+        "Console.WriteLine($\"[{DateTime.Now:HH:mm:ss.fff}] [PLM_LOGGER] State={{_cellularState}} Organelles={{_organelles.Count}}\");"
+      ]
+    },
+    {
+      "id": "PLM_WATCHDOG",
+      "description": "Plasmide anti-deadlock: réinitialise si état bloqué trop longtemps.",
+      "circular": true,
+      "sequence": [
+        "if (_stuckCounter++ > 10) { Console.WriteLine(\"[WATCHDOG] Deadlock détecté. Reset épigénétique.\"); _cellularState = 1; _stuckCounter = 0; }"
+      ]
+    }
+  ],
+  "proteins": [
+    {
+      "id": "initialize",
+      "filename": "initialize.prot",
+      "extends": null,
+      "description": "Point d'entrée cellulaire. Boucle étrange d'auto-observation + quine.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void Initialize() {",
+        "    {{comment}} Initialisation du système...",
+        "    {{state_var}} = {{expr: base_state + randint(0, 8) }};",
+        "    {{plasmid:PLM_WATCHDOG}}",
+        "    {{ca_state:B3/S23}}",
+        "    {{if: state_var > 5}}",
+        "        Console.WriteLine(\"{{meta:philosophy}}\");",
+        "    {{elif: state_var == 0}}",
+        "        Console.WriteLine(\"État nul. Renaissance épigénétique.\");",
+        "        {{state_var}} = 1;",
+        "    {{else}}",
+        "        {{comment}} Équilibre homéostatique atteint",
+        "    {{endif}}",
+        "    {{mutate:0.05}}Console.WriteLine(\"Mutation silencieuse.\");{{endmutate}}",
+        "    {{oscillate:3}}Console.WriteLine(\"Impulsion oscillante génération {{gen_count}}.\");{{endoscillate}}",
+        "    {{quine:}}",
+        "    {{self_ref:log_init}}",
+        "}"
+      ],
+      "variables": { "base_state": 5 },
+      "meta": {
+        "docstring": "/// <summary>\n/// Initialisation cellulaire. Je suis le point d'entrée qui s'observe entrant.\n/// La boucle se referme: ce code imprime sa propre représentation.\n/// </summary>",
+        "philosophy": "Je démarre en sachant que j'ai démarré. C'est une boucle qui se ferme sur elle-même.",
+        "weight": 2.0,
+        "expression_level": 1.0
+      },
+      "conway_rules": {
+        "B3/S23": [
+          "if (_entropy.Next(0,9) == 3) {{state_var}}++;",
+          "if (_organelles.Count > 2 && _organelles.Count < 4) {{state_var}} = (int)({{state_var}} * 1.1);"
+        ]
+      },
+      "sub_proteins": {
+        "log_init": [
+          "    Console.WriteLine($\"État post-init: {{{state_var}}}\");"
+        ]
+      },
+      "epigenetic_markers": ["methylated_at_codon_3", "acetylated_h3k27"]
+    },
+    {
+      "id": "phenylalanine",
+      "filename": "phenylalanine.prot",
+      "extends": null,
+      "description": "Traitement hydrophobe. Émergence par voisinage local.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void ProcessPhenylalanine() {",
+        "    {{comment}} Traitement des données hydrophobes...",
+        "    {{operon_check:OP_GROWTH}}",
+        "    {{repeat:3}}",
+        "        double local_{{loop_var}} = {{entropy}}.NextDouble() * {{state_var}};",
+        "        {{ca_state:B23/S3}}",
+        "        {{if: local_{{loop_var}} > 0.5}}",
+        "            {{state_var}} += 1;",
+        "        {{elif: local_{{loop_var}} < 0.2}}",
+        "            {{state_var}} = Math.Max(0, {{state_var}} - 1);",
+        "        {{else}}",
+        "            {{comment}} Équilibre thermodynamique atteint",
+        "        {{endif}}",
+        "        {{mutate:0.08}}{{state_var}} ^= 1;{{endmutate}}",
+        "    {{endrepeat}}",
+        "    {{plasmid:PLM_LOGGER}}",
+        "    {{meta:self_reflection}}",
+        "}"
+      ],
+      "variables": {
+        "entropy": "{{global:entropy_var}}",
+        "state_var": "{{global:state_var}}"
+      },
+      "meta": {
+        "docstring": "/// <summary>\n/// Protéine hydrophobe. Ses propriétés émergent de l'interaction locale.\n/// Marqueurs épigénétiques: régulation via opéron OP_GROWTH.\n/// </summary>",
+        "self_reflection": "Console.WriteLine(\"J'observe mes propres états locaux évoluer. Je suis la somme de mes voisinages.\");",
+        "weight": 1.0,
+        "expression_level": 0.8
+      },
+      "conway_rules": {
+        "B23/S3": [
+          "if (local_{{loop_var}} > 0.3 && local_{{loop_var}} < 0.7) {{state_var}} += 0.5;"
+        ]
+      },
+      "epigenetic_markers": []
+    },
+    {
+      "id": "analyze",
+      "filename": "analyze.prot",
+      "extends": null,
+      "description": "Analyse récursive avec distillation, transposon et oscillation.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void Analyze() {",
+        "    {{comment}} Analyse avec variation aléatoire...",
+        "    double value = {{expr: random() * {{state_var}} }};",
+        "    Console.WriteLine($\"Résultat d'analyse : {value:F2}\");",
+        "    {{if: random() < {{global:distillation_blend_prob}}}}",
+        "        {{comment}} Distillation en cours : mélange de patterns",
+        "        {{random_choice:[\"Console.WriteLine(\\\"Blend alpha\\\");\", \"Console.WriteLine(\\\"Blend bêta\\\");\", \"Console.WriteLine(\\\"Blend gamma\\\");\"]}}",
+        "    {{endif}}",
+        "    {{transposon:TP_AMPLIFY}}",
+        "    {{oscillate:5}}Console.WriteLine(\"Pulse analytique profond.\");{{endoscillate}}",
+        "    {{self_ref:deep_insight}}",
+        "}"
+      ],
+      "variables": { "state_var": "{{global:state_var}}" },
+      "meta": {
+        "docstring": "/// <summary>\n/// Analyse récursive. Le processus s'observe analysant.\n/// Transposon TP_AMPLIFY peut se déplacer dans le génome.\n/// </summary>",
+        "weight": 0.9,
+        "expression_level": 1.2
+      },
+      "sub_proteins": {
+        "deep_insight": [
+          "    if (value > {{state_var}} * 0.8) Console.WriteLine(\"Insight profond détecté.\");"
+        ]
+      },
+      "transposons": {
+        "TP_AMPLIFY": {
+          "description": "Se déplace avec prob 0.1 vers la prochaine protéine, amplifiant l'état.",
+          "jump_prob": 0.1,
+          "effect": "{{state_var}} = (int)({{state_var}} * 1.5); Console.WriteLine(\"[TP_AMPLIFY] Transposon activé.\");"
+        }
+      },
+      "epigenetic_markers": ["phosphorylated_ser15"]
+    },
+    {
+      "id": "heatshock",
+      "filename": "heatshock.prot",
+      "extends": "initialize",
+      "override": {
+        "meta.philosophy": "Je m'auto-répare sous stress thermique. La chaleur est mon signal.",
+        "variables.base_state": 2
+      },
+      "description": "Protéine de choc thermique. Hérite d'initialize, override la philosophie et l'état de base.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void HeatShock() {",
+        "    {{comment}} Réponse SOS déclenchée par OP_STRESS...",
+        "    {{parent:initialize}}",
+        "    {{comment}} Réparation des protéines dénaturées",
+        "    for (int i = 0; i < _organelles.Count; i++) {",
+        "        {{state_var}} = Math.Max(1, {{state_var}} - 1);",
+        "        Console.WriteLine($\"Réparation organelle {i}: état={{_cellularState}}\");",
+        "    }",
+        "    {{mutate:0.03}}Console.WriteLine(\"Mutation adaptative sous stress.\");{{endmutate}}",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Heatshock protein (HSP). Hérite d'initialize.\n/// Surcharge la réponse initiale pour intégrer la réparation d'urgence.\n/// </summary>",
+        "weight": 1.5,
+        "expression_level": 0.6
+      }
+    },
+    {
+      "id": "repair",
+      "filename": "repair.prot",
+      "extends": null,
+      "description": "Mécanisme de réparation de l'ADN. Corrige les mutations délétères.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void Repair() {",
+        "    {{comment}} Scan des erreurs épigénétiques...",
+        "    int errors = {{expr: randint(0, 3) }};",
+        "    for (int e = 0; e < errors; e++) {",
+        "        Console.WriteLine($\"Correction erreur #{e}: reversion état.\");",
+        "        {{state_var}} = Math.Max(0, {{state_var}} - 1);",
+        "    }",
+        "    {{plasmid:PLM_LOGGER}}",
+        "    Console.WriteLine(\"Réparation complète. Intégrité génomique restaurée.\");",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// DNA repair enzyme. Corrige les dommages induits par les transposons et mutations.\n/// </summary>",
+        "weight": 1.2,
+        "expression_level": 0.9
+      }
+    }
+  ]
+}
