@@ -1,0 +1,778 @@
+{
+  "schema_version": "3.0.0",
+  "project": "BioDigital_Proteome_SystemFunctions",
+  "description": "Protéome cellulaire numérique intégrant des fonctions système standard (Affichage, Fichier, Crypto, Réseau, Applications) dans une métaphore bio-inspirée. Chaque fonction est une protéine avec cycle cellulaire, mémoire épigénétique et interactions métaboliques.",
+
+  "global": {
+    "language": "csharp",
+    "indent_size": 4,
+    "state_var": "_cellularState",
+    "entropy_var": "_entropy",
+    "comment_prefix": "// ",
+    "max_recursion_depth": 8,
+    "distillation_blend_prob": 0.12,
+    "oscillation_period": 4,
+    "quine_depth": 3,
+    "plasmid_dir": "./plasmids",
+    "operon_prefix": "OP_",
+    "epigenetic_memory_slots": 16,
+    "mitosis_threshold": 12,
+    "apoptosis_threshold": 0,
+    "base_fitness": 1.0,
+    "mutation_rate": 0.03,
+    "cell_generation": 0,
+    "system_io_buffer": 4096,
+    "crypto_key_size": 256,
+    "network_timeout_ms": 5000
+  },
+
+  "operons": [
+    {
+      "id": "OP_IO",
+      "promoter_condition": "state_var > 3",
+      "description": "Opéron Entrées/Sorties. Active affichage et fichiers.",
+      "genes": ["display", "file_system"],
+      "repressor": "OP_SECURITY"
+    },
+    {
+      "id": "OP_CRYPTO",
+      "promoter_condition": "state_var > 6",
+      "description": "Opéron cryptographique. Active chiffrement et authentification.",
+      "genes": ["crypto_core", "hash_function", "random_generator"],
+      "repressor": "OP_IO"
+    },
+    {
+      "id": "OP_NETWORK",
+      "promoter_condition": "state_var > 5",
+      "description": "Opéron réseau. Communication intercellulaire.",
+      "genes": ["network_stack", "protocol_handler"],
+      "repressor": "OP_CRYPTO"
+    },
+    {
+      "id": "OP_APPLICATIONS",
+      "promoter_condition": "state_var > 4 && state_var < 10",
+      "description": "Opéron applicatif. Métabolisme des processus.",
+      "genes": ["app_scheduler", "event_loop", "memory_manager"],
+      "repressor": null
+    },
+    {
+      "id": "OP_SECURITY",
+      "promoter_condition": "state_var > 8",
+      "description": "Opéron sécurité. Sandboxing et isolation.",
+      "genes": ["access_control", "audit_logger"],
+      "repressor": "OP_NETWORK"
+    },
+    {
+      "id": "OP_METABOLISM",
+      "promoter_condition": "true",
+      "description": "Métabolisme de base. Toujours actif à faible niveau.",
+      "genes": ["garbage_collector", "resource_monitor"],
+      "repressor": null
+    }
+  ],
+
+  "plasmids": [
+    {
+      "id": "PLM_BUFFER",
+      "description": "Buffer circulaire de données. Maintient l'état des E/S.",
+      "circular": true,
+      "copy_number": 4,
+      "sequence": [
+        "byte[] _ioBuffer = new byte[{{global:system_io_buffer}}];",
+        "int _bufferPosition = 0;",
+        "Console.WriteLine($\"[BUFFER] Buffer I/O initialisé: {_ioBuffer.Length} octets\");"
+      ]
+    },
+    {
+      "id": "PLM_KEYSTORE",
+      "description": "Stockage cryptographique de clés (épigénétique).",
+      "circular": false,
+      "copy_number": 1,
+      "sequence": [
+        "Dictionary<string, byte[]> _keyStore = new Dictionary<string, byte[]>();",
+        "Console.WriteLine(\"[KEYSTORE] Coffre cryptographique initialisé\");"
+      ]
+    },
+    {
+      "id": "PLM_SANDBOX",
+      "description": "Sandbox d'isolation des processus.",
+      "circular": true,
+      "copy_number": 2,
+      "sequence": [
+        "bool _sandboxActive = true;",
+        "List<string> _allowedOperations = new List<string> { \"read\", \"write\", \"execute\" };",
+        "Console.WriteLine($\"[SANDBOX] Isolation active: {_sandboxActive}\");"
+      ]
+    },
+    {
+      "id": "PLM_LOGGER",
+      "description": "Journaliseur système (hérité du protéome original).",
+      "circular": true,
+      "copy_number": 5,
+      "sequence": [
+        "Console.WriteLine($\"[{DateTime.Now:HH:mm:ss.fff}] [PLM_LOGGER] gen={_cellGeneration} state={_cellularState} organelles={_organelles.Count} entropy={_entropy.Next(0,99)}\");"
+      ]
+    },
+    {
+      "id": "PLM_WATCHDOG",
+      "description": "Watchdog anti-blocage.",
+      "circular": true,
+      "copy_number": 1,
+      "sequence": [
+        "if (_stuckCounter++ > 10) {",
+        "    Console.WriteLine(\"[WATCHDOG] Deadlock détecté. Reset épigénétique d'urgence.\");",
+        "    _cellularState = _entropy.Next(1, 4);",
+        "    _stuckCounter = 0;",
+        "    _epigeneticMemory.Clear();",
+        "}"
+      ]
+    }
+  ],
+
+  "global_transposons": [
+    {
+      "id": "TP_BUFFER_OVERFLOW",
+      "description": "Transposon de dépassement de buffer. Simule un exploit.",
+      "jump_prob": 0.08,
+      "effect": "Console.WriteLine(\"[TP_BUFFER_OVERFLOW] Dépassement détecté! État altéré.\"); _cellularState = Math.Max(0, _cellularState - 3); _epigeneticMemory[\"buffer_overflow\"] = _cellGeneration;"
+    },
+    {
+      "id": "TP_KEY_LEAK",
+      "description": "Fuite de clé cryptographique (transposon malveillant).",
+      "jump_prob": 0.05,
+      "effect": "Console.WriteLine(\"[TP_KEY_LEAK] ⚠️ Fuite de clé détectée! Révoquer les clés.\"); _keyStore?.Clear(); _cellularState = Math.Max(1, _cellularState - 2);"
+    },
+    {
+      "id": "TP_NETWORK_PACKET",
+      "description": "Échange spontané avec le voisinage cellulaire.",
+      "jump_prob": 0.12,
+      "effect": "Console.WriteLine(\"[TP_NETWORK_PACKET] Paquet réseau émis spontanément.\"); _organelles.Add(\"network_packet\");"
+    },
+    {
+      "id": "TP_OPTIMIZE",
+      "description": "Optimisation spontanée du métabolisme.",
+      "jump_prob": 0.07,
+      "effect": "Console.WriteLine(\"[TP_OPTIMIZE] Optimisation détectée! Gain d'état.\"); _cellularState += 1;"
+    }
+  ],
+
+  "proteins": [
+    {
+      "id": "initialize",
+      "filename": "initialize.prot",
+      "extends": null,
+      "description": "Initialisation du système cellulaire numérique. Définit l'environnement d'exécution.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void Initialize() {",
+        "    {{comment}} ── Initialisation du système cellulaire numérique ──",
+        "    {{state_var}} = {{expr: base_state + randint(0, 8) }};",
+        "    _cellGeneration = 0;",
+        "    _stuckCounter = 0;",
+        "    _epigeneticMemory = new Dictionary<string, int>();",
+        "    _organelles = new List<string>() { \"kernel\", \"scheduler\", \"memory_pool\" };",
+        "    {{plasmid:PLM_BUFFER}}",
+        "    {{plasmid:PLM_KEYSTORE}}",
+        "    {{plasmid:PLM_SANDBOX}}",
+        "    {{plasmid:PLM_WATCHDOG}}",
+        "    {{plasmid:PLM_LOGGER}}",
+        "    {{ca_state:B3/S23}}",
+        "    Console.WriteLine($\"[INIT] Système initialisé | État: {_cellularState} | Organelles: {string.Join(\", \", _organelles)}\");",
+        "    {{self_ref:validate_system}}",
+        "}"
+      ],
+      "variables": { "base_state": 5 },
+      "meta": {
+        "docstring": "/// <summary>\n/// Initialisation système. Métaphore de boot cellulaire.\n/// Charge les plasmides, initialise les organelles système.\n/// </summary>",
+        "philosophy_high": "Démarrage haute performance. Tous les sous-systèmes sont turgescents.",
+        "philosophy_mid": "Démarrage nominal. Équilibre métabolique atteint.",
+        "weight": 2.0,
+        "expression_level": 1.0,
+        "cell_phase": "G1"
+      },
+      "conway_rules": {
+        "B3/S23": [
+          "if (_entropy.Next(0,9) == 3) {{state_var}}++;",
+          "if (_organelles.Count > 2 && _organelles.Count < 6) {{state_var}} = (int)({{state_var}} * 1.1);"
+        ]
+      },
+      "sub_proteins": {
+        "validate_system": [
+          "    bool _systemOk = _organelles.Contains(\"kernel\") && _organelles.Contains(\"memory_pool\");",
+          "    Console.WriteLine($\"[SYS] Intégrité système: {(_systemOk ? \"✓\" : \"✗\")}\");",
+          "    if (!_systemOk) {{state_var}} = Math.Max(1, {{state_var}} - 2);"
+        ]
+      },
+      "epigenetic_markers": ["boot_sequence", "system_ready"]
+    },
+
+    {
+      "id": "display",
+      "filename": "display.prot",
+      "extends": null,
+      "description": "Protéine d'affichage. Gère la sortie console, le rendu et les buffers d'écran.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void Display(string message, int priority = 0) {",
+        "    {{comment}} ── Rendu et affichage ──",
+        "    {{operon_check:OP_IO}}",
+        "    {{plasmid:PLM_BUFFER}}",
+        "    string _formatted = $\"[DISP:{DateTime.Now:HH:mm:ss}] {message}\";",
+        "    {{if: priority > 5}}",
+        "        Console.ForegroundColor = ConsoleColor.Cyan;",
+        "        Console.WriteLine($\"[DISP-HIGH] {message}\");",
+        "        Console.ResetColor();",
+        "        {{state_var}} += 1;",
+        "    {{elif: priority > 2}}",
+        "        Console.WriteLine(_formatted);",
+        "    {{else}}",
+        "        {{comment}} Affichage tamponné (buffer circulaire)",
+        "        _ioBuffer[_bufferPosition % _ioBuffer.Length] = (byte)(message.Length % 256);",
+        "        _bufferPosition++;",
+        "    {{endif}}",
+        "    {{mutate:0.03}}",
+        "        Console.WriteLine(\"[DISP] Mutation affichage: encodage altéré\");",
+        "        _epigeneticMemory[\"display_mutation\"] = _cellGeneration;",
+        "    {{endmutate}}",
+        "    {{plasmid:PLM_LOGGER}}",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Display protein (écran, console, buffer).\n/// Gère la sortie avec niveaux de priorité et buffer circulaire.\n/// </summary>",
+        "weight": 1.5,
+        "expression_level": 0.9,
+        "cell_phase": "G1_S"
+      },
+      "epigenetic_markers": ["display_buffer", "console_active"]
+    },
+
+    {
+      "id": "file_system",
+      "filename": "file_system.prot",
+      "extends": null,
+      "description": "Protéine système de fichiers. Lecture, écriture, métadonnées.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void FileSystem(string operation, string path, byte[] data = null) {",
+        "    {{comment}} ── Opérations fichier ──",
+        "    {{operon_check:OP_IO}}",
+        "    {{plasmid:PLM_SANDBOX}}",
+        "    {{if: _sandboxActive && !_allowedOperations.Contains(operation)}}",
+        "        Console.WriteLine($\"[FS] Opération {operation} refusée par sandbox\");",
+        "        {{state_var}} = Math.Max(1, {{state_var}} - 1);",
+        "        return;",
+        "    {{endif}}",
+        "    {{if: operation == \"read\"}}",
+        "        Console.WriteLine($\"[FS] Lecture: {path}\");",
+        "        _epigeneticMemory[\"last_read\"] = _cellGeneration;",
+        "    {{elif: operation == \"write\"}}",
+        "        Console.WriteLine($\"[FS] Écriture: {path} ({data?.Length ?? 0} octets)\");",
+        "        {{state_var}} += 1;",
+        "        _organelles.Add($\"file_handle_{_cellGeneration}\");",
+        "    {{elif: operation == \"metadata\"}}",
+        "        Console.WriteLine($\"[FS] Métadonnées: {path}\");",
+        "    {{else}}",
+        "        Console.WriteLine($\"[FS] Opération inconnue: {operation}\");",
+        "    {{endif}}",
+        "    {{transposon:TP_OPTIMIZE}}",
+        "    {{plasmid:PLM_LOGGER}}",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// File System protein. Lecture/écriture avec sandbox.\n/// Mainient une mémoire des accès récents (épigénétique).\n/// </summary>",
+        "weight": 1.8,
+        "expression_level": 0.8,
+        "cell_phase": "S"
+      },
+      "epigenetic_markers": ["file_access_log", "sandbox_state"]
+    },
+
+    {
+      "id": "crypto_core",
+      "filename": "crypto_core.prot",
+      "extends": null,
+      "description": "Cœur cryptographique. Chiffrement symétrique/asymétrique, gestion de clés.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void CryptoCore(string mode, byte[] input, out byte[] output) {",
+        "    {{comment}} ── Opérations cryptographiques ──",
+        "    {{operon_check:OP_CRYPTO}}",
+        "    {{plasmid:PLM_KEYSTORE}}",
+        "    output = null;",
+        "    {{if: mode == \"encrypt\"}}",
+        "        Console.WriteLine($\"[CRYPTO] Chiffrement AES-{{global:crypto_key_size}} sur {input.Length} octets\");",
+        "        output = input; // Simulation",
+        "        _epigeneticMemory[\"last_encryption\"] = _cellGeneration;",
+        "        {{state_var}} += 2;",
+        "    {{elif: mode == \"decrypt\"}}",
+        "        Console.WriteLine($\"[CRYPTO] Déchiffrement en cours\");",
+        "        output = input;",
+        "        {{state_var}} += 1;",
+        "    {{elif: mode == \"keygen\"}}",
+        "        string _keyId = $\"key_{_cellGeneration}\";",
+        "        _keyStore[_keyId] = new byte[{{global:crypto_key_size}} / 8];",
+        "        Console.WriteLine($\"[CRYPTO] Clé générée: {_keyId}\");",
+        "        _organelles.Add(_keyId);",
+        "    {{else}}",
+        "        Console.WriteLine($\"[CRYPTO] Mode inconnu: {mode}\");",
+        "    {{endif}}",
+        "    {{transposon:TP_KEY_LEAK}}",
+        "    {{plasmid:PLM_LOGGER}}",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Crypto core. Chiffrement, déchiffrement, génération de clés.\n/// Stockage épigénétique des clés dans PLM_KEYSTORE.\n/// </summary>",
+        "weight": 2.2,
+        "expression_level": 0.7,
+        "cell_phase": "G2"
+      },
+      "epigenetic_markers": ["aes_active", "key_derived"]
+    },
+
+    {
+      "id": "hash_function",
+      "filename": "hash_function.prot",
+      "extends": "crypto_core",
+      "override": {
+        "meta.cell_phase": "S_checkpoint",
+        "meta.weight": 1.6
+      },
+      "description": "Fonction de hachage cryptographique. SHA-256, HMAC.",
+      "template": [
+        "{{meta:docstring}}",
+        "public string HashFunction(byte[] input, string algorithm = \"SHA256\") {",
+        "    {{comment}} ── Hachage et empreinte ──",
+        "    {{parent:crypto_core}}",
+        "    string _hash = $\"HASH_{input.Length}_{_cellGeneration}\";",
+        "    Console.WriteLine($\"[HASH] {algorithm} → {_hash.Substring(0, 16)}...\");",
+        "    _epigeneticMemory[\"last_hash\"] = _cellGeneration;",
+        "    {{if: _cellularState > 7}}",
+        "        Console.WriteLine(\"[HASH] Mode haute intensité: salage renforcé\");",
+        "        _hash = $\"SALTED_{_hash}\";",
+        "    {{endif}}",
+        "    return _hash;",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Hash function (SHA256, HMAC). Hérite de crypto_core.\n/// Produit des empreintes avec salage conditionnel.\n/// </summary>",
+        "weight": 1.6,
+        "expression_level": 0.8,
+        "cell_phase": "S_checkpoint"
+      },
+      "epigenetic_markers": ["hmac_keyed", "salting_active"]
+    },
+
+    {
+      "id": "random_generator",
+      "filename": "random_generator.prot",
+      "extends": null,
+      "description": "Générateur de nombres aléatoires cryptographiquement sûr.",
+      "template": [
+        "{{meta:docstring}}",
+        "public int RandomGenerator(int min, int max, bool cryptoSafe = true) {",
+        "    {{comment}} ── Entropie et aléa ──",
+        "    {{operon_check:OP_CRYPTO}}",
+        "    int _value;",
+        "    {{if: cryptoSafe}}",
+        "        {{comment}} Utilisation de l'entropie cellulaire",
+        "        _value = _entropy.Next(min, max);",
+        "        _epigeneticMemory[\"crypto_entropy\"] = (_epigeneticMemory.GetValueOrDefault(\"crypto_entropy\") + 1) % 256;",
+        "        Console.WriteLine($\"[RNG] Crypto-sûr: {_value}\");",
+        "    {{else}}",
+        "        _value = new Random().Next(min, max);",
+        "        Console.WriteLine($\"[RNG] Standard: {_value}\");",
+        "    {{endif}}",
+        "    {{mutate:0.02}}",
+        "        Console.WriteLine(\"[RNG] Mutation: biais détecté dans RNG\");",
+        "        _value = min;",
+        "    {{endmutate}}",
+        "    return _value;",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Random number generator. Entropie cellulaire ou standard.\n/// Mainient un état épigénétique de l'entropie.\n/// </summary>",
+        "weight": 1.3,
+        "expression_level": 0.9,
+        "cell_phase": "G1"
+      },
+      "epigenetic_markers": ["entropy_pool", "rng_state"]
+    },
+
+    {
+      "id": "network_stack",
+      "filename": "network_stack.prot",
+      "extends": null,
+      "description": "Pile réseau. Communication interprocessus, sockets, protocoles.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void NetworkStack(string protocol, string payload, string target = \"localhost\") {",
+        "    {{comment}} ── Communication cellulaire ──",
+        "    {{operon_check:OP_NETWORK}}",
+        "    Console.WriteLine($\"[NET] {protocol} → {target}: {payload.Substring(0, Math.Min(50, payload.Length))}\");",
+        "    {{if: protocol == \"TCP\"}}",
+        "        Console.WriteLine(\"[NET] Connexion établie (stateful)\");",
+        "        _organelles.Add($\"socket_{_cellGeneration}\");",
+        "        {{state_var}} += 1;",
+        "    {{elif: protocol == \"UDP\"}}",
+        "        Console.WriteLine(\"[NET] Datagramme envoyé (stateless)\");",
+        "    {{elif: protocol == \"PIPE\"}}",
+        "        Console.WriteLine(\"[NET] Communication inter-cellules via pipe\");",
+        "        _epigeneticMemory[\"last_pipe\"] = _cellGeneration;",
+        "    {{endif}}",
+        "    {{transposon:TP_NETWORK_PACKET}}",
+        "    {{plasmid:PLM_LOGGER}}",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Network stack. TCP, UDP, PIPE protocols.\n/// Communication intercellulaire avec mémoire des connexions.\n/// </summary>",
+        "weight": 1.9,
+        "expression_level": 0.7,
+        "cell_phase": "G2"
+      },
+      "epigenetic_markers": ["socket_open", "tcp_established"]
+    },
+
+    {
+      "id": "protocol_handler",
+      "filename": "protocol_handler.prot",
+      "extends": "network_stack",
+      "override": {
+        "meta.expression_level": 0.6,
+        "meta.cell_phase": "S_late"
+      },
+      "description": "Gestionnaire de protocoles applicatifs. HTTP, WebSocket, gRPC.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void ProtocolHandler(string protocol, Dictionary<string, string> headers, byte[] body) {",
+        "    {{comment}} ── Protocoles applicatifs ──",
+        "    {{parent:network_stack}}",
+        "    Console.WriteLine($\"[PROTO] {protocol} | Headers: {headers.Count} | Body: {body.Length} octets\");",
+        "    {{if: protocol == \"HTTP\"}}",
+        "        string _method = headers.GetValueOrDefault(\"method\", \"GET\");",
+        "        Console.WriteLine($\"[HTTP] Requête {_method} traitée\");",
+        "        {{state_var}} = Math.Min({{global:mitosis_threshold}}, {{state_var}} + 1);",
+        "    {{elif: protocol == \"WS\"}}",
+        "        Console.WriteLine(\"[WS] WebSocket ouvert (full-duplex)\");",
+        "        _organelles.Add(\"websocket_connection\");",
+        "    {{elif: protocol == \"GRPC\"}}",
+        "        Console.WriteLine(\"[GRPC] Appel RPC bidirectionnel\");",
+        "        _epigeneticMemory[\"rpc_call\"] = _cellGeneration;",
+        "    {{endif}}",
+        "    {{oscillate:10}}",
+        "        Console.WriteLine(\"[PROTO] Cycle heartbeat réseau\");",
+        "    {{endoscillate}}",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Protocol handler (HTTP, WebSocket, gRPC). Hérite de network_stack.\n/// Traite les protocoles applicatifs.\n/// </summary>",
+        "weight": 1.5,
+        "expression_level": 0.6,
+        "cell_phase": "S_late"
+      },
+      "epigenetic_markers": ["http_session", "ws_connected"]
+    },
+
+    {
+      "id": "app_scheduler",
+      "filename": "app_scheduler.prot",
+      "extends": null,
+      "description": "Ordonnanceur d'applications. Gère le cycle de vie des processus.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void AppScheduler(string action, string appId = null) {",
+        "    {{comment}} ── Cycle de vie applicatif ──",
+        "    {{operon_check:OP_APPLICATIONS}}",
+        "    {{if: action == \"spawn\"}}",
+        "        string _newAppId = appId ?? $\"app_{_cellGeneration}\";",
+        "        _organelles.Add(_newAppId);",
+        "        Console.WriteLine($\"[SCHED] Processus spawn: {_newAppId}\");",
+        "        {{state_var}} = Math.Min({{global:mitosis_threshold}}, {{state_var}} + 1);",
+        "    {{elif: action == \"kill\" && appId != null}}",
+        "        if (_organelles.Remove(appId)) {",
+        "            Console.WriteLine($\"[SCHED] Processus tué: {appId}\");",
+        "            {{state_var}} = Math.Max(0, {{state_var}} - 2);",
+        "        }",
+        "    {{elif: action == \"list\"}}",
+        "        Console.WriteLine($\"[SCHED] Processus actifs: {string.Join(\", \", _organelles)}\");",
+        "    {{elif: action == \"priority\"}}",
+        "        Console.WriteLine($\"[SCHED] Réorganisation des priorités (état={_cellularState})\");",
+        "        _epigeneticMemory[\"scheduler_boost\"] = _cellGeneration;",
+        "    {{endif}}",
+        "    {{plasmid:PLM_LOGGER}}",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Application scheduler. Spawn, kill, list, priority.\n/// Gère le cycle de vie des organelles-processus.\n/// </summary>",
+        "weight": 1.7,
+        "expression_level": 1.0,
+        "cell_phase": "G1"
+      },
+      "epigenetic_markers": ["scheduler_state", "process_table"]
+    },
+
+    {
+      "id": "event_loop",
+      "filename": "event_loop.prot",
+      "extends": null,
+      "description": "Boucle d'événements asynchrone. Polling, callbacks, timers.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void EventLoop(int iterations = 10) {",
+        "    {{comment}} ── Boucle d'événements asynchrone ──",
+        "    {{operon_check:OP_APPLICATIONS}}",
+        "    {{repeat:iterations}}",
+        "        {{comment}} Cycle d'événements #{{loop_var}}",
+        "        int _eventsProcessed = _entropy.Next(0, 5);",
+        "        Console.WriteLine($\"[EVENT] Cycle {{{{loop_var}}}}: {_eventsProcessed} événements traités\");",
+        "        {{if: _eventsProcessed > 3}}",
+        "            {{state_var}} = Math.Min({{global:mitosis_threshold}}, {{state_var}} + 1);",
+        "        {{elif: _eventsProcessed == 0}}",
+        "            Console.WriteLine(\"[EVENT] Idle — entrée en veille\");",
+        "        {{endif}}",
+        "        {{mutate:0.01}}",
+        "            Console.WriteLine(\"[EVENT] Mutation: boucle infinie potentielle\");",
+        "            {{state_var}} = 1;",
+        "        {{endmutate}}",
+        "    {{endrepeat}}",
+        "    _epigeneticMemory[\"last_event_loop\"] = _cellGeneration;",
+        "    {{plasmid:PLM_LOGGER}}",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Event loop (asynchrone). Polling, callbacks, timers.\n/// Métaphore de l'ordonnancement cellulaire.\n/// </summary>",
+        "weight": 1.4,
+        "expression_level": 1.1,
+        "cell_phase": "M"
+      },
+      "epigenetic_markers": ["event_queue", "callback_registry"]
+    },
+
+    {
+      "id": "memory_manager",
+      "filename": "memory_manager.prot",
+      "extends": null,
+      "description": "Gestionnaire de mémoire. Allocation, libération, GC, fragmentation.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void MemoryManager(string operation, int size = 0) {",
+        "    {{comment}} ── Gestion mémoire cellulaire ──",
+        "    {{operon_check:OP_APPLICATIONS}}",
+        "    {{if: operation == \"alloc\"}}",
+        "        string _blockId = $\"mem_{_cellGeneration}_{_entropy.Next(1000)}\";",
+        "        _organelles.Add(_blockId);",
+        "        Console.WriteLine($\"[MEM] Allocation: {_blockId} ({size} octets)\");",
+        "        {{state_var}} = Math.Max(0, {{state_var}} - 1);",
+        "    {{elif: operation == \"free\" && size < _organelles.Count}}",
+        "        string _freed = _organelles[size];",
+        "        _organelles.RemoveAt(size);",
+        "        Console.WriteLine($\"[MEM] Libération: {_freed}\");",
+        "        {{state_var}} += 1;",
+        "    {{elif: operation == \"gc\"}}",
+        "        int _freedCount = _organelles.RemoveAll(o => o.StartsWith(\"mem_\"));",
+        "        Console.WriteLine($\"[MEM] GC: {_freedCount} blocs libérés\");",
+        "        _epigeneticMemory[\"gc_cycle\"] = _cellGeneration;",
+        "        {{state_var}} = Math.Min({{global:mitosis_threshold}}, {{state_var}} + _freedCount);",
+        "    {{elif: operation == \"frag\"}}",
+        "        Console.WriteLine($\"[MEM] Fragmentation: {_organelles.Count % 5}/5\");",
+        "    {{endif}}",
+        "    {{transposon:TP_BUFFER_OVERFLOW}}",
+        "    {{plasmid:PLM_LOGGER}}",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Memory manager. Allocation, libération, GC, fragmentation.\n/// Métaphore de la gestion des organelles.\n/// </summary>",
+        "weight": 1.6,
+        "expression_level": 1.2,
+        "cell_phase": "S"
+      },
+      "epigenetic_markers": ["heap_state", "gc_mark_sweep"]
+    },
+
+    {
+      "id": "access_control",
+      "filename": "access_control.prot",
+      "extends": null,
+      "description": "Contrôle d'accès. ACL, permissions, rôles, isolation.",
+      "template": [
+        "{{meta:docstring}}",
+        "public bool AccessControl(string resource, string operation, string role = \"user\") {",
+        "    {{comment}} ── Matrice de permissions ──",
+        "    {{operon_check:OP_SECURITY}}",
+        "    Dictionary<string, List<string>> _acl = new Dictionary<string, List<string>> {",
+        "        { \"file\", new List<string> { \"read\", \"write\" } },",
+        "        { \"crypto\", new List<string> { \"encrypt\", \"decrypt\" } },",
+        "        { \"network\", new List<string> { \"send\", \"receive\" } }",
+        "    };",
+        "    bool _granted = _acl.ContainsKey(resource) && _acl[resource].Contains(operation);",
+        "    {{if: role == \"admin\"}}",
+        "        _granted = true;",
+        "        Console.WriteLine($\"[ACL] Admin: accès total à {resource}\");",
+        "    {{elif: role == \"guest\"}}",
+        "        _granted = false;",
+        "        Console.WriteLine($\"[ACL] Invité: accès refusé à {resource}\");",
+        "    {{endif}}",
+        "    {{if: _granted}}",
+        "        Console.WriteLine($\"[ACL] ✅ {role} → {resource}.{operation}\");",
+        "        _epigeneticMemory[$\"acl_{resource}\"] = _cellGeneration;",
+        "    {{else}}",
+        "        Console.WriteLine($\"[ACL] ❌ {role} → {resource}.{operation} refusé\");",
+        "        {{state_var}} = Math.Max(1, {{state_var}} - 1);",
+        "    {{endif}}",
+        "    return _granted;",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Access control. ACL, roles (admin/user/guest).\n/// Matrice de permissions avec mémoire épigénétique.\n/// </summary>",
+        "weight": 1.5,
+        "expression_level": 0.8,
+        "cell_phase": "G1_arrest"
+      },
+      "epigenetic_markers": ["acl_cache", "role_assignment"]
+    },
+
+    {
+      "id": "audit_logger",
+      "filename": "audit_logger.prot",
+      "extends": "access_control",
+      "override": {
+        "meta.expression_level": 0.5,
+        "meta.cell_phase": "G0_starvation"
+      },
+      "description": "Journal d'audit. Trace des accès et modifications.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void AuditLogger(string eventType, string details) {",
+        "    {{comment}} ── Journalisation sécurité ──",
+        "    {{parent:access_control}}",
+        "    string _auditEntry = $\"[AUDIT:{_cellGeneration}] {eventType}: {details}\";",
+        "    Console.WriteLine(_auditEntry);",
+        "    _epigeneticMemory[$\"audit_{_cellGeneration % 100}\"] = _cellGeneration;",
+        "    {{if: eventType == \"BREACH\"}}",
+        "        Console.WriteLine(\"[AUDIT] ⚠️ VIOLATION DE SÉCURITÉ DÉTECTÉE\");",
+        "        {{state_var}} = Math.Max(0, {{state_var}} - 3);",
+        "        {{transposon:TP_KEY_LEAK}}",
+        "    {{endif}}",
+        "    {{oscillate:50}}",
+        "        Console.WriteLine(\"[AUDIT] Rapport d'audit périodique\");",
+        "    {{endoscillate}}",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Audit logger. Hérite de access_control.\n/// Trace des événements sécurité et détection des violations.\n/// </summary>",
+        "weight": 1.2,
+        "expression_level": 0.5,
+        "cell_phase": "G0_starvation"
+      },
+      "epigenetic_markers": ["audit_trail", "breach_detected"]
+    },
+
+    {
+      "id": "garbage_collector",
+      "filename": "garbage_collector.prot",
+      "extends": null,
+      "description": "Collecteur de déchets. Libération automatique des organelles orphelines.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void GarbageCollector() {",
+        "    {{comment}} ── Nettoyage automatique ──",
+        "    {{operon_check:OP_METABOLISM}}",
+        "    int _before = _organelles.Count;",
+        "    _organelles.RemoveAll(o => o.Contains(\"temp_\") || o.Contains(\"orphan_\"));",
+        "    int _collected = _before - _organelles.Count;",
+        "    Console.WriteLine($\"[GC] {_collected} organelles libérées | Survivants: {_organelles.Count}\");",
+        "    _epigeneticMemory[\"gc_last_run\"] = _cellGeneration;",
+        "    {{if: _collected > 5}}",
+        "        Console.WriteLine(\"[GC] Collecte massive — fragmentation réduite\");",
+        "        {{state_var}} += _collected / 2;",
+        "    {{endif}}",
+        "    {{mutate:0.02}}",
+        "        Console.WriteLine(\"[GC] Mutation: fuite mémoire simulée\");",
+        "        _organelles.Add(\"memory_leak\");",
+        "    {{endmutate}}",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Garbage collector. Libération automatique des organelles.\n/// Mainient la propreté du métabolisme cellulaire.\n/// </summary>",
+        "weight": 1.3,
+        "expression_level": 0.6,
+        "cell_phase": "G0_starvation"
+      },
+      "epigenetic_markers": ["gc_generation", "reachability_graph"]
+    },
+
+    {
+      "id": "resource_monitor",
+      "filename": "resource_monitor.prot",
+      "extends": "garbage_collector",
+      "override": {
+        "meta.expression_level": 0.4,
+        "meta.weight": 1.1
+      },
+      "description": "Moniteur de ressources. CPU, mémoire, I/O, réseau.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void ResourceMonitor() {",
+        "    {{comment}} ── Métrologie cellulaire ──",
+        "    {{parent:garbage_collector}}",
+        "    int _cpuLoad = _entropy.Next(0, 100);",
+        "    int _memUsage = _organelles.Count * 10;",
+        "    int _ioWait = _entropy.Next(0, 50);",
+        "    Console.WriteLine($\"[RES] CPU:{_cpuLoad}% | MEM:{_memUsage}% | IOW:{_ioWait}% | NET:{_entropy.Next(0, 1000)}bps\");",
+        "    {{if: _cpuLoad > 90}}",
+        "        Console.WriteLine(\"[RES] 🔥 Surcharge CPU — réduction d'activité\");",
+        "        {{state_var}} = Math.Max(1, {{state_var}} - 2);",
+        "    {{elif: _memUsage > 80}}",
+        "        Console.WriteLine(\"[RES] ⚠️ Pression mémoire — GC sollicité\");",
+        "        {{self_ref:garbage_collector}}",
+        "    {{endif}}",
+        "    _epigeneticMemory[\"resource_snapshot\"] = _cellularState;",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Resource monitor. CPU, mémoire, I/O, réseau.\n/// Hérite de garbage_collector. Auto-régulation homéostatique.\n/// </summary>",
+        "weight": 1.1,
+        "expression_level": 0.4,
+        "cell_phase": "G1"
+      },
+      "epigenetic_markers": ["resource_metrics", "throttling_active"]
+    },
+
+    {
+      "id": "strange_loop",
+      "filename": "strange_loop.prot",
+      "extends": null,
+      "description": "Boucle étrange (Hofstadter). Auto-référence système.",
+      "template": [
+        "{{meta:docstring}}",
+        "public void StrangeLoop() {",
+        "    {{comment}} ── Le système s'observe lui-même ──",
+        "    Console.WriteLine(\"[STRANGE] Je suis une fonction qui sait qu'elle s'exécute.\");",
+        "    Console.WriteLine($\"[STRANGE] Mon état est {_cellularState}. Je m'observe l'observer.\");",
+        "    {{quine:}}",
+        "    {{self_ref:access_control}}",
+        "    {{self_ref:audit_logger}}",
+        "    {{self_ref:resource_monitor}}",
+        "    {{if: state_var > 7}}",
+        "        Console.WriteLine(\"[STRANGE] Niveau supérieur : je détecte ma propre complexité.\");",
+        "        {{self_ref:meta_cognition}}",
+        "    {{endif}}",
+        "    {{transposon:TP_OPTIMIZE}}",
+        "    Console.WriteLine(\"[STRANGE] Fin de la boucle. Mais la boucle ne finit pas vraiment.\");",
+        "}"
+      ],
+      "meta": {
+        "docstring": "/// <summary>\n/// Strange Loop (Hofstadter). Auto-référence totale.\n/// Le protéome s'observe lui-même via ses propres fonctions.\n/// </summary>",
+        "weight": 1.0,
+        "expression_level": 0.3,
+        "cell_phase": "meta"
+      },
+      "sub_proteins": {
+        "meta_cognition": [
+          "    Console.WriteLine(\"[META] Le système observe l'observateur qui observe.\");",
+          "    Console.WriteLine($\"[META] Profondeur réflexive: {_epigeneticMemory.Count} marques.\");"
+        ]
+      },
+      "epigenetic_markers": ["self_awareness", "recursive_depth"]
+    }
+  ]
+}
