@@ -62,18 +62,23 @@ LANG_PROFILES: Dict[str, Dict] = {
         "ext": ".cs", "comment": "//", "state": "_state",
         "organelles": "_organelles",
         "imports": "using System;\nusing System.Collections.Generic;\n",
-        "class_def": "public class BioProgram",
-        "init": "public BioProgram()", "exec": "public void Execute()",
-        "loop_for": "for (int i = 0; i < _state % 5 + 1; i++)",
-        "loop_while": "while (_state > 0)",
-        "cond_if": "if (_state % 2 == 0)", "cond_elif": "else if (_state > 10)",
-        "try_block": "try {", "catch_block": "catch (Exception e) {",
+        "class_def": "public class BioProgram {",          # AJOUT DE {
+        "init": "public BioProgram() {",                   # AJOUT DE {
+        "exec": "public void Execute() {",                 # AJOUT DE {
+        "loop_for": "for (int i = 0; i < _state % 5 + 1; i++) {", # AJOUT DE {
+        "loop_while": "while (_state > 0) {",              # AJOUT DE {
+        "cond_if": "if (_state % 2 == 0) {",               # AJOUT DE {
+        "cond_elif": "} else if (_state > 10) {",          # AJOUT DE } et {
+        "try_block": "try {", 
+        "catch_block": "} catch (Exception e) {",          # AJOUT DE }
         "var_int":   "int gene_{pos} = new Random().Next(0, 100);",
         "var_str":   "string gene_{pos} = $\"val_{pos}\";",
         "var_bool":  "bool gene_{pos} = _state % 2 == 0;",
         "var_float": "double gene_{pos} = new Random().NextDouble() * _state;",
-        "state_inc": "_state++;", "state_dec": "_state = Math.Max(0, _state - 1);",
-        "print": "Console.WriteLine", "indent": "    ",
+        "state_inc": "_state++;", 
+        "state_dec": "_state = Math.Max(0, _state - 1);",
+        "print": "Console.WriteLine", 
+        "indent": "    ",
     },
     "javascript": {
         "ext": ".js", "comment": "//", "state": "this.state",
@@ -359,13 +364,14 @@ class DNAToCodeTranscriptor:
     def _close_block(self):
         if self.stack:
             top = self.stack.pop()
+            self._pop()
             if top == ActionType.BEGIN_TRY:
-                self._pop()
                 self._line(self.profile["catch_block"])
                 self._push()
+                self._line("}")
                 self._pop()
             else:
-                self._pop()
+                self._line("}")  # Ajoute systématiquement l'accolade fermante
 
     def _push(self):
         self.stack.append(ActionType.BEGIN_LOOP)
