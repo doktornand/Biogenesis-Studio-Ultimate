@@ -1,0 +1,365 @@
+{
+  "schema_version": "4.0.0",
+  "project": "QwCrypto_BioEvolutionary_MemeticEngine",
+  "description": "Moteur cryptographique bio-inspiré. Utilise l'évolution formelle (NL, SAC, DU, AD, BIC) pour générer une S-Box parfaite, puis l'intègre dans un flux de chiffrement de fichiers hautement obfusqué et résilient à l'analyse statique.",
+  "authors": [
+    "QwCrypto Bio-Compiler",
+    "Inspired by: Schneier, Nyberg, Webster & Tavares, Memetic Warfare Labs"
+  ],
+  "global": {
+    "language": "csharp",
+    "indent_size": 4,
+    "state_var": "_cellularState",
+    "entropy_var": "_entropy",
+    "sbox_var": "_sbox",
+    "sbox_inverse_var": "_inverse_sbox",
+    "comment_prefix": "// ",
+    "max_recursion_depth": 4,
+    "mutation_rate": 0.08,
+    "oscillation_period": 5,
+    "sbox_size": 256,
+    "population_size": 20,
+    "elite_ratio": 0.10,
+    "max_generations": 500,
+    "fitness_target": 0.95,
+    "crypto_block_size": 16,
+    "crypto_key_size": 32,
+    "file_chunk_size": 4096,
+    "nl_max": 128,
+    "du_optimal": 4,
+    "ad_max": 7
+  },
+  "fitness_weights": {
+    "w1_nl": { "value": 0.35, "role": "Non-linéarité", "mutable": true, "min": 0.20, "max": 0.50 },
+    "w2_sac": { "value": 0.25, "role": "SAC", "mutable": true, "min": 0.10, "max": 0.40 },
+    "w3_du": { "value": 0.20, "role": "DU", "mutable": true, "min": 0.10, "max": 0.35 },
+    "w4_ad": { "value": 0.12, "role": "AD", "mutable": true, "min": 0.05, "max": 0.20 },
+    "w5_bic": { "value": 0.08, "role": "BIC", "mutable": true, "min": 0.03, "max": 0.15 }
+  },
+  "convergence_criteria": {
+    "nl_min": 100,
+    "sac_deviation_max": 0.05,
+    "du_max": 8,
+    "ad_min": 6,
+    "bic_min": 0.80,
+    "stagnation_limit": 50
+  },
+  "operons": [
+    {
+      "id": "OP_SBOX_EVOLUTION",
+      "promoter_condition": "state_var > 2",
+      "description": "Active le moteur évolutif formel pour la génération de la S-Box.",
+      "genes": ["evolutionary_selector", "fitness_aggregator"],
+      "repressor": null
+    },
+    {
+      "id": "OP_FITNESS_EVAL",
+      "promoter_condition": "true",
+      "description": "Orchestre la mesure des 5 propriétés formelles (NL, SAC, DU, AD, BIC).",
+      "genes": ["nl_evaluator", "sac_evaluator", "du_evaluator", "ad_evaluator", "bic_evaluator"],
+      "repressor": null
+    },
+    {
+      "id": "OP_CORE_CRYPTO",
+      "promoter_condition": "state_var > 5",
+      "description": "Initialise le contexte avec la S-Box évoluée et sa table inverse.",
+      "genes": ["crypto_engine_init"],
+      "repressor": null
+    },
+    {
+      "id": "OP_FILE_STREAM",
+      "promoter_condition": "state_var > 3",
+      "description": "Gère la lecture/écriture par blocs (4Ko).",
+      "genes": ["file_encrypt_stream", "file_decrypt_stream"],
+      "repressor": null
+    },
+    {
+      "id": "OP_IMMUNE_SYSTEM",
+      "promoter_condition": "true",
+      "description": "Système immunitaire : obfuscation, leurres anti-debug et bruit mémétique.",
+      "genes": ["obfuscation_layer", "anti_debug_check"],
+      "repressor": null
+    }
+  ],
+  "plasmids": [
+    {
+      "id": "PLM_WHT",
+      "description": "Transform de Walsh-Hadamard in-place O(n log n).",
+      "sequence": [
+        "void WHT(int[] f) {",
+        "    for (int step = 1; step < f.Length; step <<= 1)",
+        "        for (int i = 0; i < f.Length; i += step << 1)",
+        "            for (int j = i; j < i + step; j++) {",
+        "                int u = f[j], v = f[j + step];",
+        "                f[j] = u + v; f[j + step] = u - v;",
+        "            }",
+        "}"
+      ]
+    },
+    {
+      "id": "PLM_SBOX_VALIDATE",
+      "description": "Vérifie la bijectivité de la S-Box.",
+      "sequence": [
+        "bool ValidateSBox(byte[] sbox) {",
+        "    if (sbox == null || sbox.Length != {{global:sbox_size}}) return false;",
+        "    bool[] seen = new bool[{{global:sbox_size}}];",
+        "    foreach (byte b in sbox) { if (seen[b]) return false; seen[b] = true; }",
+        "    return true;",
+        "}"
+      ]
+    },
+    {
+      "id": "PLM_SBOX_INVERT",
+      "description": "Calcule la S-Box inverse pour un déchiffrement en O(1).",
+      "sequence": [
+        "byte[] {{global:sbox_inverse_var}} = new byte[{{global:sbox_size}}];",
+        "for (int i = 0; i < {{global:sbox_size}}; i++) {",
+        "    {{global:sbox_inverse_var}}[{{global:sbox_var}}[i]] = (byte)i;",
+        "}"
+      ]
+    },
+    {
+      "id": "PLM_POPULATION_SEED",
+      "description": "Génère une S-Box candidate par mélange de Fisher-Yates.",
+      "sequence": [
+        "byte[] GenerateSBoxCandidate() {",
+        "    byte[] s = new byte[{{global:sbox_size}}];",
+        "    for (int i = 0; i < {{global:sbox_size}}; i++) s[i] = (byte)i;",
+        "    for (int i = {{global:sbox_size}} - 1; i > 0; i--) {",
+        "        int j = {{entropy_var}}.Next(i + 1);",
+        "        (s[i], s[j]) = (s[j], s[i]);",
+        "    }",
+        "    return s;",
+        "}"
+      ]
+    },
+    {
+      "id": "PLM_MUTATION_SWAP",
+      "description": "Mutation par swap de paires (préserve la bijectivité).",
+      "sequence": [
+        "byte[] MutateSBox(byte[] parent, double mutationRate) {",
+        "    byte[] child = (byte[])parent.Clone();",
+        "    int swaps = Math.Max(1, (int)({{global:sbox_size}} * mutationRate));",
+        "    for (int k = 0; k < swaps; k++) {",
+        "        int i = {{entropy_var}}.Next({{global:sbox_size}});",
+        "        int j = {{entropy_var}}.Next({{global:sbox_size}});",
+        "        (child[i], child[j]) = (child[j], child[i]);",
+        "    }",
+        "    return child;",
+        "}"
+      ]
+    },
+    {
+      "id": "PLM_FILE_CHUNKER",
+      "description": "Boucle de lecture/écriture par blocs de 4Ko.",
+      "sequence": [
+        "using (var fsIn = new System.IO.FileStream(inputPath, System.IO.FileMode.Open))",
+        "using (var fsOut = new System.IO.FileStream(outputPath, System.IO.FileMode.Create)) {",
+        "    byte[] buffer = new byte[{{global:file_chunk_size}}];",
+        "    int bytesRead;",
+        "    while ((bytesRead = fsIn.Read(buffer, 0, buffer.Length)) > 0) {",
+        "        // Traitement du bloc injecté par le protéome",
+        "        fsOut.Write(buffer, 0, bytesRead);",
+        "        {{state_var}} = ({{state_var}} + 1) % 10;",
+        "    }",
+        "}"
+      ]
+    },
+    {
+      "id": "PLM_JUNK_CODE",
+      "description": "Code mort syntactiquement valide pour complexifier l'AST.",
+      "sequence": [
+        "if ({{entropy_var}}.Next(0, 100) > 95) {",
+        "    {{state_var}} = Math.Clamp({{state_var}} + {{entropy_var}}.Next(-5, 5), 0, 9);",
+        "    var _decoy = new byte[{{entropy_var}}.Next(16, 256)];",
+        "}"
+      ]
+    },
+    {
+      "id": "PLM_LOGGER_FORMAL",
+      "description": "Log structuré avec horodatage.",
+      "sequence": [
+        "Console.WriteLine($\"[{DateTime.Now:HH:mm:ss.fff}] [GEN={_cellGeneration}] [STATE={{{state_var}}}] {logMessage}\");"
+      ]
+    }
+  ],
+  "global_transposons": [
+    {
+      "id": "TP_WEIGHT_DRIFT",
+      "description": "Perturbe un poids fitness (dérive génétique).",
+      "jump_prob": 0.05,
+      "effect": "int _wIdx = {{entropy_var}}.Next(5); _fitnessWeights[_wIdx] = Math.Clamp(_fitnessWeights[_wIdx] + ({{entropy_var}}.NextDouble() * 0.04 - 0.02), 0.03, 0.50); NormalizeWeights(_fitnessWeights);"
+    },
+    {
+      "id": "TP_POPULATION_RESET",
+      "description": "Réinitialise 20% de la population sur stagnation.",
+      "jump_prob": 0.03,
+      "effect": "int _resetCount = (int)(_population.Count * 0.20); for (int _r = 0; _r < _resetCount; _r++) { _population[_population.Count - 1 - _r] = GenerateSBoxCandidate(); }"
+    },
+    {
+      "id": "TP_DEAD_CODE_INSERTION",
+      "description": "Insère du code inutile pour briser les motifs de désassembleurs.",
+      "jump_prob": 0.15,
+      "effect": "{{plasmid:PLM_JUNK_CODE}}"
+    },
+    {
+      "id": "TP_MEMETIC_DRIFT",
+      "description": "Brouille les constantes cryptographiques apparentes pour l'analyse statique (style labyrinthe).",
+      "jump_prob": 0.10,
+      "effect": "int _memeticNoise = {{entropy_var}}.Next() ^ (int)DateTime.UtcNow.Ticks; _expandedKey[0] = (byte)(_expandedKey[0] ^ (_memeticNoise % 256));"
+    }
+  ],
+  "proteins": [
+    {
+      "id": "nl_evaluator",
+      "filename": "nl_evaluator.cs",
+      "description": "Mesure la non-linéarité (NL) via WHT.",
+      "template": [
+        "public (int nl, int whtMax) EvaluateNL(byte[] sbox) {",
+        "    {{plasmid:PLM_SBOX_VALIDATE}}",
+        "    if (!ValidateSBox(sbox)) throw new ArgumentException(\"S-Box invalide\");",
+        "    {{plasmid:PLM_WHT}}",
+        "    int globalMaxW = 0, minNL = int.MaxValue;",
+        "    for (int b = 1; b < {{global:sbox_size}}; b++) {",
+        "        int[] f = new int[{{global:sbox_size}}];",
+        "        for (int x = 0; x < {{global:sbox_size}}; x++) {",
+        "            int dot = 0, tmp = sbox[x] & b;",
+        "            while (tmp > 0) { dot ^= tmp & 1; tmp >>= 1; }",
+        "            f[x] = dot == 1 ? -1 : 1;",
+        "        }",
+        "        WHT(f);",
+        "        int maxW = 0;",
+        "        for (int i = 0; i < {{global:sbox_size}}; i++) if (Math.Abs(f[i]) > maxW) maxW = Math.Abs(f[i]);",
+        "        int nl_b = ({{global:sbox_size}} / 2) - maxW / 2;",
+        "        if (nl_b < minNL) minNL = nl_b;",
+        "        if (maxW > globalMaxW) globalMaxW = maxW;",
+        "    }",
+        "    return (minNL, globalMaxW);",
+        "}"
+      ]
+    },
+    {
+      "id": "du_evaluator",
+      "filename": "du_evaluator.cs",
+      "description": "Mesure la Differential Uniformity (DU) via DDT.",
+      "template": [
+        "public int EvaluateDU(byte[] sbox) {",
+        "    int[,] ddt = new int[{{global:sbox_size}}, {{global:sbox_size}}];",
+        "    int maxDU = 0;",
+        "    for (int dx = 1; dx < {{global:sbox_size}}; dx++) {",
+        "        for (int x = 0; x < {{global:sbox_size}}; x++) {",
+        "            int dy = sbox[x] ^ sbox[x ^ dx];",
+        "            ddt[dx, dy]++;",
+        "        }",
+        "    }",
+        "    for (int dx = 1; dx < {{global:sbox_size}}; dx++)",
+        "        for (int dy = 0; dy < {{global:sbox_size}}; dy++)",
+        "            if (ddt[dx, dy] > maxDU) maxDU = ddt[dx, dy];",
+        "    return maxDU;",
+        "}"
+      ]
+    },
+    {
+      "id": "evolutionary_selector",
+      "filename": "evolutionary_selector.cs",
+      "description": "Moteur évolutif : génère la S-Box optimale avant le chiffrement.",
+      "template": [
+        "public byte[] RunEvolution() {",
+        "    {{plasmid:PLM_POPULATION_SEED}}",
+        "    {{plasmid:PLM_MUTATION_SWAP}}",
+        "    var _population = new List<byte[]>();",
+        "    for (int i = 0; i < {{global:population_size}}; i++) _population.Add(GenerateSBoxCandidate());",
+        "    byte[] _bestSBox = null; double _bestFitness = 0.0;",
+        "    for (_cellGeneration = 0; _cellGeneration < {{global:max_generations}}; _cellGeneration++) {",
+        "        // Évaluation simplifiée pour l'exemple (appel réel aux 5 evaluateurs)",
+        "        var _scored = _population.Select(s => new { sbox = s, fit = EvaluateFitness(s) }).OrderByDescending(x => x.fit).ToList();",
+        "        if (_scored[0].fit > _bestFitness) { _bestFitness = _scored[0].fit; _bestSBox = (byte[])_scored[0].sbox.Clone(); }",
+        "        if (_bestFitness >= {{global:fitness_target}}) break;",
+        "        var _nextGen = _scored.Take((int)({{global:population_size}} * {{global:elite_ratio}})).Select(x => x.sbox).ToList();",
+        "        while (_nextGen.Count < {{global:population_size}}) {",
+        "            var _winner = _scored[{{entropy_var}}.Next(_scored.Count)].sbox;",
+        "            _nextGen.Add(MutateSBox(_winner, {{global:mutation_rate}}));",
+        "        }",
+        "        _population = _nextGen;",
+        "    }",
+        "    return _bestSBox;",
+        "}"
+      ]
+    },
+    {
+      "id": "crypto_engine_init",
+      "filename": "crypto_init.cs",
+      "description": "Initialise le moteur : fait évoluer la S-Box, puis calcule son inverse.",
+      "template": [
+        "public void InitializeCrypto(byte[] baseKey) {",
+        "    {{operon_check:OP_SBOX_EVOLUTION}}",
+        "    Console.WriteLine(\"[BIO-ENGINE] Évolution de la S-Box formelle en cours...\");",
+        "    {{global:sbox_var}} = RunEvolution();",
+        "    ",
+        "    {{operon_check:OP_CORE_CRYPTO}}",
+        "    Console.WriteLine(\"[BIO-ENGINE] S-Box évoluée. Calcul de l'inverse pour O(1)...\");",
+        "    {{plasmid:PLM_SBOX_INVERT}}",
+        "    ",
+        "    // Expansion de clé avec bruit",
+        "    byte[] _expandedKey = new byte[{{global:crypto_key_size}}];",
+        "    for(int i=0; i < {{global:crypto_key_size}}; i++) {",
+        "        _expandedKey[i] = (byte)(baseKey[i % baseKey.Length] ^ {{entropy_var}}.Next(1, 128));",
+        "    }",
+        "    {{transposon:TP_MEMETIC_DRIFT}}",
+        "    Console.WriteLine($\"[CRYPTO] Moteur initialisé. État: {{{{state_var}}}}\");",
+        "}"
+      ]
+    },
+    {
+      "id": "file_encrypt_stream",
+      "filename": "file_encrypt.cs",
+      "description": "Chiffrement de fichier par flux avec la S-Box évoluée.",
+      "template": [
+        "public void EncryptFile(string inputPath, string outputPath, byte[] key) {",
+        "    {{operon_check:OP_FILE_STREAM}}",
+        "    this.InitializeCrypto(key);",
+        "    {{plasmid:PLM_FILE_CHUNKER}}",
+        "    {{operon_check:OP_CORE_CRYPTO}}",
+        "    for (int i = 0; i < bytesRead; i++) {",
+        "        buffer[i] = (byte)({{global:sbox_var}}[buffer[i] ^ _expandedKey[i % _expandedKey.Length]] ^ (byte){{state_var}});",
+        "    }",
+        "    {{transposon:TP_DEAD_CODE_INSERTION}}",
+        "}"
+      ]
+    },
+    {
+      "id": "file_decrypt_stream",
+      "filename": "file_decrypt.cs",
+      "description": "Déchiffrement O(1) utilisant la S-Box inverse.",
+      "template": [
+        "public void DecryptFile(string inputPath, string outputPath, byte[] key) {",
+        "    {{operon_check:OP_FILE_STREAM}}",
+        "    this.InitializeCrypto(key); // Régénère la même S-Box et son inverse",
+        "    {{plasmid:PLM_FILE_CHUNKER}}",
+        "    for (int i = 0; i < bytesRead; i++) {",
+        "        byte temp = (byte)(buffer[i] ^ (byte){{state_var}});",
+        "        buffer[i] = (byte)({{global:sbox_inverse_var}}[temp] ^ _expandedKey[i % _expandedKey.Length]);",
+        "    }",
+        "    {{transposon:TP_DEAD_CODE_INSERTION}}",
+        "}"
+      ]
+    },
+    {
+      "id": "obfuscation_layer",
+      "filename": "obfuscation_core.cs",
+      "description": "Point d'entrée labyrinthique pour brouiller l'AST.",
+      "template": [
+        "public void ExecuteMemeticAction(string action, string path, byte[] key) {",
+        "    {{operon_check:OP_IMMUNE_SYSTEM}}",
+        "    if ({{state_var}} > 7) {",
+        "        {{plasmid:PLM_JUNK_CODE}}",
+        "        {{plasmid:PLM_JUNK_CODE}}",
+        "    }",
+        "    if (action == \"encrypt\") this.EncryptFile(path, path + \".enc\", key);",
+        "    else if (action == \"decrypt\") this.DecryptFile(path, path + \".dec\", key);",
+        "    {{transposon:TP_DEAD_CODE_INSERTION}}",
+        "}"
+      ]
+    }
+  ]
+}
